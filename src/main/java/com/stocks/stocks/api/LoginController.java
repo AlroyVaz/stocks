@@ -22,7 +22,7 @@ public class LoginController {
     }
 
     @PostMapping
-    public boolean login(@RequestBody Credentials credentials, HttpSession session) {
-        return loginService.login(credentials, session);
+    public void login(@RequestBody Credentials credentials, HttpSession session) {
+        loginService.login(credentials, session);
     }
 }
