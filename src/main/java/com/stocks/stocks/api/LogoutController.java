@@ -19,7 +19,7 @@ public class LogoutController {
     }
 
     @GetMapping
-    public void logout(HttpServletRequest request) {
-            logoutService.logout(request);
+    public boolean logout(HttpServletRequest request) {
+            return logoutService.logout(request);
     }
 }
