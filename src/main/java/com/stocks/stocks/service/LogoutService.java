@@ -7,9 +7,12 @@ import javax.servlet.http.HttpSession;
 
 @Service
 public class LogoutService {
-    public void logout(HttpServletRequest request) {
+    public boolean logout(HttpServletRequest request) {
         HttpSession session = request.getSession();
-        if (session != null)
+        if (session != null && session.getAttribute("USERNAME") != null) {
             session.invalidate();
+            return true;
+        }
+        return false;
     }
 }
