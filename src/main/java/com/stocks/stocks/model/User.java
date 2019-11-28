@@ -1,24 +1,30 @@
 package com.stocks.stocks.model;
 
-import java.util.List;
+import org.bson.types.ObjectId;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.Document;
 
+@Document(collection = "UserCollection")
 public class User {
+    @Id
+    private ObjectId id;
     private Credentials credentials;
     private String physicalAddress;
     private String emailAddress;
     private String forgotPassword;
     private double balance;
-    private List<BankAccount> bankAccountList;
-    private List<Stock> stockList;
 
-    public User(Credentials credentials, String physicalAddress, String emailAddress, String forgotPassword, double balance, List<BankAccount> bankAccountList, List<Stock> stockList) {
+    public User(Credentials credentials, String physicalAddress, String emailAddress, String forgotPassword) {
+        this.id = new ObjectId();
         this.credentials = credentials;
         this.physicalAddress = physicalAddress;
         this.emailAddress = emailAddress;
         this.forgotPassword = forgotPassword;
-        this.balance = balance;
-        this.bankAccountList = bankAccountList;
-        this.stockList = stockList;
+        this.balance = 0;
+    }
+
+    public ObjectId getId() {
+        return id;
     }
 
     public double getBalance() {
@@ -59,21 +65,5 @@ public class User {
 
     public void setForgotPassword(String forgotPassword) {
         this.forgotPassword = forgotPassword;
-    }
-
-    public List<BankAccount> getBankAccountList() {
-        return bankAccountList;
-    }
-
-    public void setBankAccountList(List<BankAccount> bankAccountList) {
-        this.bankAccountList = bankAccountList;
-    }
-
-    public List<Stock> getStockList() {
-        return stockList;
-    }
-
-    public void setStockList(List<Stock> stockList) {
-        this.stockList = stockList;
     }
 }
