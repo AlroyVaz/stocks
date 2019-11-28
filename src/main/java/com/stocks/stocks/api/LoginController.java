@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import javax.servlet.http.HttpSession;
+import javax.servlet.http.HttpServletRequest;
 
 @RequestMapping("login")
 @RestController
@@ -22,7 +22,7 @@ public class LoginController {
     }
 
     @PostMapping
-    public void login(@RequestBody Credentials credentials, HttpSession session) {
-        loginService.login(credentials, session);
+    public void login(@RequestBody Credentials credentials, HttpServletRequest request) {
+        loginService.login(credentials, request);
     }
 }
