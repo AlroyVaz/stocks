@@ -4,6 +4,8 @@ import org.bson.types.ObjectId;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import java.util.List;
+
 @Document(collection = "UserCollection")
 public class User {
     @Id
@@ -13,6 +15,8 @@ public class User {
     private String emailAddress;
     private String forgotPassword;
     private double balance;
+    private List<BankAccount> bankAccountList;
+    private List<Stock> stockList;
 
     public User(Credentials credentials, String physicalAddress, String emailAddress, String forgotPassword) {
         this.id = new ObjectId();
@@ -21,6 +25,8 @@ public class User {
         this.emailAddress = emailAddress;
         this.forgotPassword = forgotPassword;
         this.balance = 0;
+        this.bankAccountList = null;
+        this.stockList = null;
     }
 
     public ObjectId getId() {
@@ -65,5 +71,21 @@ public class User {
 
     public void setForgotPassword(String forgotPassword) {
         this.forgotPassword = forgotPassword;
+    }
+
+    public List<BankAccount> getBankAccountList() {
+        return bankAccountList;
+    }
+
+    public void setBankAccountList(List<BankAccount> bankAccountList) {
+        this.bankAccountList = bankAccountList;
+    }
+
+    public List<Stock> getStockList() {
+        return stockList;
+    }
+
+    public void setStockList(List<Stock> stockList) {
+        this.stockList = stockList;
     }
 }
