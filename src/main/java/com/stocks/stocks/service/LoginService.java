@@ -1,6 +1,6 @@
 package com.stocks.stocks.service;
 
-import com.stocks.stocks.dao.LoginDao;
+import com.stocks.stocks.dao.UserDao;
 import com.stocks.stocks.model.Credentials;
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,23 +13,23 @@ import javax.servlet.http.HttpSession;
 @Service
 public class LoginService {
 
-    private final LoginDao loginDao;
+    private final UserDao userDao;
 
     @Autowired
-    public LoginService(@Qualifier("loginDao") LoginDao loginDao) {
-        this.loginDao = loginDao;
+    public LoginService(@Qualifier("userDao") UserDao userDao) {
+        this.userDao = userDao;
     }
 
     public boolean login(Credentials credentials, HttpServletRequest request) {
         HttpSession session = request.getSession();
-        // not already logged in (must log out first)
-        if (session != null && session.getAttribute("USERNAME") != null)
-            return false;
-        ObjectId userId = loginDao.validateUser(credentials);
-        if(userId != null) {
-            session.setAttribute("USERNAME", credentials.getUsername());
-            session.setAttribute("USER_ID", userId);
-            return true;
+        // can't log in if already logged in (must log out first)
+        if (session == null || session.getAttribute("USERNAME") == null) {
+            ObjectId userId = userDao.validateUser(credentials);
+            if (userId != null) {
+                session.setAttribute("USERNAME", credentials.getUsername());
+                session.setAttribute("USER_ID", userId);
+                return true;
+            }
         }
         return false;
     }
