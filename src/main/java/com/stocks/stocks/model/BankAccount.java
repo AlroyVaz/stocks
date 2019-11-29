@@ -1,14 +1,26 @@
 package com.stocks.stocks.model;
 
+import org.bson.types.ObjectId;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.Document;
+
+@Document(collection = "BankAccountCollection")
 public class BankAccount {
+    @Id
+    private ObjectId id;
     private String bankRoutingNumber;
     private String bankAccountNumber;
     private double money;
 
-    public BankAccount(String bankRoutingNumber, String bankAccountNumber, double money) {
+    public BankAccount(String bankRoutingNumber, String bankAccountNumber) {
+        this.id = new ObjectId();
         this.bankRoutingNumber = bankRoutingNumber;
         this.bankAccountNumber = bankAccountNumber;
-        this.money = money;
+        this.money = 1000;
+    }
+
+    public ObjectId getId() {
+        return id;
     }
 
     public String getBankRoutingNumber() {
