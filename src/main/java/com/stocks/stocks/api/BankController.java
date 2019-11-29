@@ -1,12 +1,13 @@
 package com.stocks.stocks.api;
 
 import com.stocks.stocks.model.BankAccount;
-import com.stocks.stocks.model.BankAccountWrapper;
+import com.stocks.stocks.model.TransferRequest;
 import com.stocks.stocks.service.BankService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.List;
 
 @RequestMapping("bank")
 @RestController
@@ -19,17 +20,17 @@ public class BankController {
     }
 
     @PostMapping("/add")
-    public void addBank(@RequestBody BankAccountWrapper bankAccountWrapper, HttpServletRequest request) {
-        bankService.addBank(bankAccountWrapper.getBankAccountList(), request);
+    public String addBank(@RequestBody List<BankAccount> bankAccountList, HttpServletRequest request) {
+        return bankService.addBank(bankAccountList, request);
     }
 
     @PostMapping("/transferTo")
-    public void transferToBank(@RequestParam("bankAccount") BankAccount bankAccount, @RequestParam("amount") double amount, HttpServletRequest request) {
-        bankService.transferToBank(bankAccount, amount, request);
+    public void transferToBank(@RequestBody TransferRequest transferRequest, HttpServletRequest request) {
+        bankService.transferToBank(transferRequest, request);
     }
 
     @PostMapping("/transferFrom")
-    public boolean transferFromBank(@RequestParam("bankAccount") BankAccount bankAccount, @RequestParam("amount") double amount, HttpServletRequest request) {
-        return bankService.transferFromBank(bankAccount, amount, request);
+    public void transferFromBank(@RequestBody TransferRequest transferRequest, HttpServletRequest request) {
+        bankService.transferFromBank(transferRequest, request);
     }
 }
