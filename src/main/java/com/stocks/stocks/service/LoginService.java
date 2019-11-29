@@ -2,7 +2,6 @@ package com.stocks.stocks.service;
 
 import com.stocks.stocks.dao.UserDao;
 import com.stocks.stocks.model.Credentials;
-import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
@@ -24,7 +23,7 @@ public class LoginService {
         HttpSession session = request.getSession();
         // can't log in if already logged in (must log out first)
         if (session == null || session.getAttribute("USERNAME") == null) {
-            ObjectId userId = userDao.validateUser(credentials);
+            String userId = userDao.validateUser(credentials);
             if (userId != null) {
                 session.setAttribute("USERNAME", credentials.getUsername());
                 session.setAttribute("USER_ID", userId);
