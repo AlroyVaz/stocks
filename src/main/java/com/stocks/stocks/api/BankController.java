@@ -20,8 +20,8 @@ public class BankController {
     }
 
     @PostMapping("/add")
-    public String addBank(@RequestBody List<BankAccount> bankAccountList, HttpServletRequest request) {
-        return bankService.addBank(bankAccountList, request);
+    public void addBank(@RequestBody List<BankAccount> bankAccountList, HttpServletRequest request) {
+        bankService.addBank(bankAccountList, request);
     }
 
     @PostMapping("/transferTo")
