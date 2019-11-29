@@ -23,16 +23,19 @@ public class ProfileService {
     public User displayProfile(HttpServletRequest request) {
         HttpSession session = request.getSession();
         if (session != null) {
-            Object username = session.getAttribute("USERNAME");
-            if (username != null)
-                return userDao.getUser((ObjectId)session.getAttribute("USER_ID"));
+            String userId = (String)session.getAttribute("USER_ID");
+            if (userId != null)
+                return userDao.getUser(userId);
         }
         return null;
     }
 
     public void editProfile(User changedUser, HttpServletRequest request) {
         HttpSession session = request.getSession();
-        if (session != null && session.getAttribute("USERNAME") != null)
-            userDao.setUser(changedUser, (ObjectId)session.getAttribute("USER_ID"));
+        if (session != null) {
+            String userId = (String)session.getAttribute("USER_ID");
+            if (userId != null)
+                userDao.setUser(changedUser, userId);
+        }
     }
 }
