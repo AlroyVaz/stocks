@@ -8,20 +8,24 @@ import org.springframework.data.mongodb.core.mapping.Document;
 public class BankAccount {
     @Id
     private ObjectId id;
+    private ObjectId userId;
     private String bankRoutingNumber;
     private String bankAccountNumber;
     private double money;
 
     public BankAccount(String bankRoutingNumber, String bankAccountNumber) {
         this.id = new ObjectId();
+        this.userId = null;
         this.bankRoutingNumber = bankRoutingNumber;
         this.bankAccountNumber = bankAccountNumber;
         this.money = 1000;
     }
 
-    public ObjectId getId() {
-        return id;
-    }
+    public ObjectId getId() { return id; }
+
+    public ObjectId getUserId() { return userId; }
+
+    public void setUserId(ObjectId userId) { this.userId = userId; }
 
     public String getBankRoutingNumber() {
         return bankRoutingNumber;
