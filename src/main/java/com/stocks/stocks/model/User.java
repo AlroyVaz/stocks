@@ -4,6 +4,7 @@ import org.bson.types.ObjectId;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Document(collection = "UserCollection")
@@ -17,6 +18,8 @@ public class User {
     private double balance;
     private List<BankAccount> bankAccountList;
     private List<Stock> stockList;
+    private List<Schedule> scheduleList;
+    private List<ObjectId> stockIdList;
 
     public User(Credentials credentials, String physicalAddress, String emailAddress, String forgotPassword) {
         this.id = new ObjectId();
@@ -27,6 +30,16 @@ public class User {
         this.balance = 0;
         this.bankAccountList = null;
         this.stockList = null;
+        this.scheduleList = null;
+        this.stockIdList = new ArrayList<ObjectId>();
+    }
+
+    public List<Schedule> getScheduleList() {
+        return scheduleList;
+    }
+
+    public void setScheduleList(List<Schedule> scheduleList) {
+        this.scheduleList = scheduleList;
     }
 
     public ObjectId getId() {
@@ -81,11 +94,31 @@ public class User {
         this.bankAccountList = bankAccountList;
     }
 
+    public List<ObjectId> getStockIdList() {
+        return stockIdList;
+    }
+
+    public void setStockIdList(List<ObjectId> stockList) {
+        this.stockIdList = stockList;
+    }
+
     public List<Stock> getStockList() {
         return stockList;
     }
 
     public void setStockList(List<Stock> stockList) {
         this.stockList = stockList;
+    }
+
+    public void addStock(ObjectId stockId) {
+        this.stockIdList.add(stockId);
+    }
+
+    public int indexOfStock(ObjectId stockId) {
+        return this.stockIdList.indexOf(stockId);
+    }
+
+    public void removeStock(ObjectId stockId) {
+        this.stockIdList.remove(stockId);
     }
 }
