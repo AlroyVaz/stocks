@@ -20,24 +20,24 @@ public class Schedule {
     // freq=1 : recurring-every minute
     // freq=2 : recurring-every hour
     // freq=3 : recurring-daily
-    // freq=4 : recurring-monthly
+    // freq=4 : recurring-weekly
     private int freq;
 
     // when to start buying/selling
     private Date startDate;
 
     // stocks to buy/sell
-    private List<ObjectId> stockIds;
+    private List<String> stockIds;
 
     // id of user that owns schedule
-    private ObjectId userId;
+    private String userId;
 
-    public Schedule(int freq, Date startDate, List<ObjectId> stocks) {
+    public Schedule(int freq, Date startDate, List<String> stockIds) {
         this.id = new ObjectId();
         this.buy = false;
         this.freq = freq;
         this.startDate = startDate;
-        this.stockIds = stocks;
+        this.stockIds = stockIds;
         this.userId = null;
     }
 
@@ -69,19 +69,19 @@ public class Schedule {
         this.startDate = startDate;
     }
 
-    public List<ObjectId> getStockIds() {
+    public List<String> getStockIds() {
         return stockIds;
     }
 
-    public void setStockIds(List<ObjectId> stockIds) {
+    public void setStockIds(List<String> stockIds) {
         this.stockIds = stockIds;
     }
 
-    public ObjectId getUserId() {
+    public String getUserId() {
         return userId;
     }
 
-    public void setUserId(ObjectId userId) {
+    public void setUserId(String userId) {
         this.userId = userId;
     }
 }
