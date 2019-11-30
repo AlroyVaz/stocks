@@ -1,16 +1,36 @@
 package com.stocks.stocks.model;
 
+import org.bson.types.ObjectId;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.Document;
+
+@Document(collection = "StockCollection")
 public class Stock {
+    @Id
+    private ObjectId id;
+    private String name;
     private double price;
     private String company;
     private String tickerSymbol;
-    private String releaseDate;
 
-    public Stock(double price, String company, String tickerSymbol, String releaseDate) {
+    public Stock(double price, String company, String tickerSymbol, String name) {
+        this.id = new ObjectId();
+        this.name = name;
         this.price = price;
         this.company = company;
         this.tickerSymbol = tickerSymbol;
-        this.releaseDate = releaseDate;
+    }
+
+    public ObjectId getId() {
+        return id;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 
     public double getPrice() {
@@ -35,13 +55,5 @@ public class Stock {
 
     public void setTickerSymbol(String tickerSymbol) {
         this.tickerSymbol = tickerSymbol;
-    }
-
-    public String getReleaseDate() {
-        return releaseDate;
-    }
-
-    public void setReleaseDate(String releaseDate) {
-        this.releaseDate = releaseDate;
     }
 }
