@@ -34,14 +34,17 @@ public class ScheduleDao {
                 return "Start date cannot be in the past";
 
             // set user as owner of the schedule
-            schedule.setUserId(userId);
+            schedule.setUserId(userIdString);
 
             // set type of schedule
             if (type.equals("buy")) {
                 schedule.setBuy(true);
 
                 // check if stocks requesting to be bought are real stocks
-                for (ObjectId stockId : schedule.getStockIds()) {
+                for (String stockIdString : schedule.getStockIds()) {
+                    if (stockIdString == null || ObjectId.isValid(stockIdString))
+                        return "Stock in schedule is invalid";
+                    ObjectId stockId = new ObjectId(stockIdString);
                     if (mongoTemplate.findById(stockId, Stock.class) == null)
                         return "Cannot buy stocks that do not exist";
                 }
@@ -50,11 +53,14 @@ public class ScheduleDao {
                 schedule.setBuy(false);
 
                 // check if stocks requesting to be sold are real owned stocks
-                for (ObjectId stockId : schedule.getStockIds()) {
+                for (String stockIdString : schedule.getStockIds()) {
+                    if (stockIdString == null)
+                        return "Stock in schedule is null";
+                    ObjectId stockId = new ObjectId(stockIdString);
                     if (mongoTemplate.findById(stockId, Stock.class) == null)
                         return "Cannot sell stocks that do not exist";
 
-                    if (user.indexOfStock(stockId) == -1)
+                    if (user.indexOfStock(stockIdString) == -1)
                         return "Cannot sell stocks that are not owned";
                 }
             }
@@ -75,7 +81,7 @@ public class ScheduleDao {
             User user = mongoTemplate.findById(userId, User.class);
             if (user == null)
                 return "Cannot find user";
-            if (!newSchedule.getUserId().equals(userId))
+            if (!newSchedule.getUserId().equals(userIdString))
                 return "User must own schedule";
 
             // ensure schedule is real, that user is same owner, and that the type is the same
@@ -94,18 +100,23 @@ public class ScheduleDao {
             // validate stocks
             if (newSchedule.isBuy()) {
                 // check if stocks requesting to be bought are real stocks
-                for (ObjectId stockId : newSchedule.getStockIds()) {
+                for (String stockIdString : newSchedule.getStockIds()) {
+                    if (stockIdString == null || ObjectId.isValid(stockIdString))
+                        return "Stock id is invalid";
+                    ObjectId stockId = new ObjectId(stockIdString);
                     if (mongoTemplate.findById(stockId, Stock.class) == null)
                         return "Cannot buy stocks that do not exist";
                 }
             }
             else {
                 // check if stocks requesting to be sold are real owned stocks
-                for (ObjectId stockId : newSchedule.getStockIds()) {
+                for (String stockIdString : newSchedule.getStockIds()) {
+                    if (stockIdString == null || ObjectId.isValid(stockIdString))
+                        return "Stock id is invalid";
+                    ObjectId stockId = new ObjectId(stockIdString);
                     if (mongoTemplate.findById(stockId, Stock.class) == null)
                         return "Cannot sell stocks that do not exist";
-
-                    if (user.indexOfStock(stockId) == -1)
+                    if (user.indexOfStock(stockIdString) == -1)
                         return "Cannot sell stocks that are not owned";
                 }
             }
@@ -134,7 +145,7 @@ public class ScheduleDao {
                 return "Cannot find schedule";
 
             // ensure user owns schedule
-            if(!schedule.getUserId().equals(userId))
+            if(!schedule.getUserId().equals(userIdString))
                 return "User must own schedule";
 
             // remove the schedule in the db
