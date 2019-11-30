@@ -19,7 +19,7 @@ public class User {
     private List<BankAccount> bankAccountList;
     private List<Stock> stockList;
     private List<Schedule> scheduleList;
-    private List<ObjectId> stockIdList;
+    private List<String> stockIdList;
 
     public User(Credentials credentials, String physicalAddress, String emailAddress, String forgotPassword) {
         this.id = new ObjectId();
@@ -31,7 +31,7 @@ public class User {
         this.bankAccountList = null;
         this.stockList = null;
         this.scheduleList = null;
-        this.stockIdList = new ArrayList<ObjectId>();
+        this.stockIdList = new ArrayList<String>();
     }
 
     public List<Schedule> getScheduleList() {
@@ -94,11 +94,11 @@ public class User {
         this.bankAccountList = bankAccountList;
     }
 
-    public List<ObjectId> getStockIdList() {
+    public List<String> getStockIdList() {
         return stockIdList;
     }
 
-    public void setStockIdList(List<ObjectId> stockList) {
+    public void setStockIdList(List<String> stockList) {
         this.stockIdList = stockList;
     }
 
@@ -110,15 +110,15 @@ public class User {
         this.stockList = stockList;
     }
 
-    public void addStock(ObjectId stockId) {
+    public void addStock(String stockId) {
         this.stockIdList.add(stockId);
     }
 
-    public int indexOfStock(ObjectId stockId) {
+    public int indexOfStock(String stockId) {
         return this.stockIdList.indexOf(stockId);
     }
 
-    public void removeStock(ObjectId stockId) {
+    public void removeStock(String stockId) {
         this.stockIdList.remove(stockId);
     }
 }
