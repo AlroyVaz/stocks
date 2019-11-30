@@ -2,39 +2,185 @@ package com.stocks.stocks.dao;
 
 import com.stocks.stocks.model.Stock;
 import com.stocks.stocks.model.StockPriceHistory;
+import com.stocks.stocks.model.User;
+import org.bson.types.ObjectId;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Repository;
 
-import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 
 @Repository("stockDao")
 public class StockDao {
-    public Stock getCurrentStockPriceFromTickerSymbol(String tickerSymbol) {
-        // get current stock price for chosen stock
-        return new Stock(0.02, "Company1", tickerSymbol, "9999-99-99");
+    private final MongoTemplate mongoTemplate;
+
+    public StockDao(MongoTemplate mongoTemplate) {
+        this.mongoTemplate = mongoTemplate;
     }
 
-    public List<Stock> getCurrentStockPriceFromCompany(String company) {
-        // get current stocks and prices for chosen company
-        List<Stock> list = new ArrayList<Stock>();
-        list.add(new Stock(0.02, company, "AAA", "9999-99-99"));
-        list.add(new Stock(0.01, company, "BBB", "1111-11-11"));
-        return list;
+    // THIS PART NEEDS TO BE CHANGED!!!!!!!!!!!!!!!!!!!!!
+    // update price and return the new price
+    private double updateStockPrice(Stock stock) {
+        // get current price from other server
+        double newPrice = stock.getPrice() + 1;
+
+        // update price in db if necessary
+        if (newPrice != stock.getPrice()) {
+            stock.setPrice(newPrice);
+            mongoTemplate.save(stock);
+        }
+
+        // return price
+        return newPrice;
     }
 
-    public StockPriceHistory getStockPriceHistoryFromTickerSymbol(String tickerSymbol) {
-        // get stock price history for chosen stock
-        return new StockPriceHistory(0.01, 0, 2, 1, 3, 1);
+    // return list of stocks matching the search criteria or null if there is an error in the input
+    public List<Stock> getStocks(String property, String value) {
+        if (value != null && (property.equals("tickerSymbol") || property.equals("company") || property.equals("name"))) {
+            // search for stocks
+            Query query = new Query();
+            query.addCriteria(Criteria.where(property).is(value));
+            List<Stock> stocks = mongoTemplate.find(query, Stock.class);
+
+            // update the prices of all stocks
+            for (Stock s : stocks)
+                updateStockPrice(s);
+
+            // return stocks found
+            return stocks;
+        }
+        return null;
     }
 
-    public void buyStocks(String username, List<Stock> stockList) {
-        // add chosen stock to list of user's stocks
-        // ensure that user 'balance' >= stock.price
-        // reduce user 'balance' by stock.price
+    // return current stock price or -1 if the stock is not found or for invalid inputs
+    public double getCurrentStockPrice(String stockIdString) {
+        if (stockIdString != null && ObjectId.isValid(stockIdString)) {
+            ObjectId stockId = new ObjectId(stockIdString);
+
+            // make sure stock exists in db
+            Stock stock = mongoTemplate.findById(stockId, Stock.class);
+            if (stock == null)
+                return -1;
+
+            // get updated stock price
+            return updateStockPrice(stock);
+        }
+        return -1;
     }
 
-    public void sellStocks(String username, List<Stock> stockList) {
-        // remove chosen stock from user's stocks
-        // add stock.price to user 'balance'
+    // return stock price history for chosen stock or null if the stock is not found or for invalid inputs
+    public StockPriceHistory getStockPriceHistory(String stockIdString) {
+        if (stockIdString != null && ObjectId.isValid(stockIdString)) {
+            ObjectId stockId = new ObjectId(stockIdString);
+            // make sure stock exists in db
+            Stock stock = mongoTemplate.findById(stockId, Stock.class);
+            if (stock == null)
+                return null;
+
+            // THIS PART NEEDS TO BE CHANGED!!!!!!!!!!!!!!!!!!!!!
+            // get stock price history from other server
+            double lastBusinessDay = updateStockPrice(stock);
+            double currentWeek = 0;
+            double pastWeek = 0;
+            double monthToDate = 0;
+            double yearToDate = 0;
+            double past5Years = 0;
+
+            // return stock price history
+            return new StockPriceHistory(lastBusinessDay, currentWeek, pastWeek, monthToDate, yearToDate, past5Years);
+        }
+        return null;
+    }
+
+    private boolean validateTime() {
+        Date date = new Date();
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(date);
+        int hour = cal.get(Calendar.HOUR_OF_DAY);
+        int day = cal.get(Calendar.DAY_OF_WEEK);
+        return hour >= 10 && hour <= 17 && day > 1 && day < 7;
+    }
+
+    public String buyStocks(List<String> stockIdStringList, String userIdString) {
+        if (stockIdStringList != null && userIdString != null
+                && stockIdStringList.size() > 0
+                && ObjectId.isValid(userIdString)
+                && validateTime()) {
+            // get user from db
+            ObjectId userId = new ObjectId(userIdString);
+            User user = mongoTemplate.findById(userId, User.class);
+            if (user == null)
+                return "Cannot find user";
+
+            for (String stockIdString : stockIdStringList) {
+                if (stockIdString !=  null && ObjectId.isValid(stockIdString)) {
+                    ObjectId stockId = new ObjectId(stockIdString);
+                    Stock stock = mongoTemplate.findById(stockId, Stock.class);
+                    if (stock == null)
+                        return "Cannot buy stocks that do not exist";
+
+                    // ensure that user has enough money in their balance
+                    stock.setPrice(updateStockPrice(stock));
+                    if (user.getBalance() < stock.getPrice())
+                        return "Cannot afford stocks";
+
+                    // reduce user 'balance' by stock price
+                    user.setBalance(user.getBalance() - stock.getPrice());
+
+                    // add chosen stock to list of user's stocks
+                    user.addStock(stockId);
+                }
+            }
+            // update user in the db
+            mongoTemplate.save(user);
+            return "Success!";
+        }
+        return "Invalid input";
+    }
+
+    public String sellStocks(List<String> stockIdStringList, String userIdString) {
+        if (stockIdStringList != null && userIdString != null
+                && stockIdStringList.size() > 0
+                && ObjectId.isValid(userIdString)
+                && validateTime()) {
+            // get user from db
+            ObjectId userId = new ObjectId(userIdString);
+            User user = mongoTemplate.findById(userId, User.class);
+            if (user == null)
+                return "Cannot find user";
+
+            for (String stockIdString : stockIdStringList) {
+                if (stockIdString != null && ObjectId.isValid(stockIdString)) {
+                    // check if user actually has this stock
+                    ObjectId stockId = new ObjectId(stockIdString);
+                    int index = user.indexOfStock(stockId);
+                    if (index == -1)
+                        return "Cannot sell stocks that are not owned";
+
+                    // get stock from db
+                    Stock stock = mongoTemplate.findById(stockId, Stock.class);
+                    if (stock == null)
+                        return "Cannot sell stocks that do not exists";
+
+                    // add stock's price to user's balance
+                    stock.setPrice(updateStockPrice(stock));
+                    user.setBalance(user.getBalance() + stock.getPrice());
+
+                    // remove chosen stock from user's stocks
+                    user.removeStock(stockId);
+                }
+            }
+            // update user in the db
+            mongoTemplate.save(user);
+            return "Success!";
+        }
+        return "Invalid input";
+    }
+
+    public List<Stock> getAllStocks() {
+        return mongoTemplate.findAll(Stock.class);
     }
 }
