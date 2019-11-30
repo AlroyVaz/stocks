@@ -40,12 +40,15 @@ public class UserDao {
 
             // get bank accounts
             Query query = new Query();
-            query.addCriteria(Criteria.where("userId").is(userId));
+            query.addCriteria(Criteria.where("userId").is(userIdString));
             user.setBankAccountList(mongoTemplate.find(query, BankAccount.class));
 
             // get stocks
             List<Stock> stockList = new ArrayList<Stock>();
-            for (ObjectId stockId : user.getStockIdList()) {
+            for (String stockIdString : user.getStockIdList()) {
+                if (!ObjectId.isValid(stockIdString))
+                    return null;
+                ObjectId stockId = new ObjectId(stockIdString);
                 Stock stock = mongoTemplate.findById(stockId, Stock.class);
                 if (stock == null)
                     return null;
