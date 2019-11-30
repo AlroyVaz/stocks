@@ -8,7 +8,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 public class BankAccount {
     @Id
     private ObjectId id;
-    private ObjectId userId;
+    private String userId;
     private String bankRoutingNumber;
     private String bankAccountNumber;
     private double money;
@@ -23,9 +23,9 @@ public class BankAccount {
 
     public ObjectId getId() { return id; }
 
-    public ObjectId getUserId() { return userId; }
+    public String getUserId() { return userId; }
 
-    public void setUserId(ObjectId userId) { this.userId = userId; }
+    public void setUserId(String userId) { this.userId = userId; }
 
     public String getBankRoutingNumber() {
         return bankRoutingNumber;
