@@ -19,7 +19,9 @@ public class BankDao {
     }
 
     public void addBank(List<BankAccount> bankAccountList, String userIdString) {
-        if (bankAccountList != null && userIdString != null && ObjectId.isValid(userIdString)) {
+        if (bankAccountList != null && userIdString != null
+                && bankAccountList.size() > 0
+                && ObjectId.isValid(userIdString)) {
             ObjectId userId = new ObjectId(userIdString);
             for (BankAccount b : bankAccountList) {
                 Query query = new Query();
