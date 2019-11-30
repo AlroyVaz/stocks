@@ -1,5 +1,6 @@
 package com.stocks.stocks.dao;
 
+import com.stocks.stocks.model.Schedule;
 import com.stocks.stocks.model.Stock;
 import com.stocks.stocks.model.StockPriceHistory;
 import com.stocks.stocks.model.User;
@@ -16,9 +17,11 @@ import java.util.List;
 @Repository("stockDao")
 public class StockDao {
     private final MongoTemplate mongoTemplate;
+    private final ScheduleDao scheduleDao;
 
-    public StockDao(MongoTemplate mongoTemplate) {
+    public StockDao(MongoTemplate mongoTemplate, ScheduleDao scheduleDao) {
         this.mongoTemplate = mongoTemplate;
+        this.scheduleDao = scheduleDao;
     }
 
     // THIS PART NEEDS TO BE CHANGED!!!!!!!!!!!!!!!!!!!!!
@@ -95,8 +98,7 @@ public class StockDao {
         return null;
     }
 
-    private boolean validateTime() {
-        Date date = new Date();
+    public boolean validateTime(Date date) {
         Calendar cal = Calendar.getInstance();
         cal.setTime(date);
         int hour = cal.get(Calendar.HOUR_OF_DAY);
@@ -104,80 +106,99 @@ public class StockDao {
         return hour >= 10 && hour <= 17 && day > 1 && day < 7;
     }
 
-    public String buyStocks(List<String> stockIdStringList, String userIdString) {
+    public boolean buyStocks(List<String> stockIdStringList, String userIdString) {
+        if (stockIdStringList != null && userIdString != null
+                && stockIdStringList.size() > 0
+                && ObjectId.isValid(userIdString)) {
+            Schedule newSchedule = new Schedule(0, new Date(), stockIdStringList);
+            scheduleDao.makeSchedule(newSchedule, "buy", userIdString);
+            return true;
+        }
+        return false;
+    }
+
+    public void sellStocks(List<String> stockIdStringList, String userIdString) {
+        if (stockIdStringList != null && userIdString != null
+                && stockIdStringList.size() > 0
+                && ObjectId.isValid(userIdString)) {
+            Schedule newSchedule = new Schedule(0, new Date(), stockIdStringList);
+            scheduleDao.makeSchedule(newSchedule, "sell", userIdString);
+        }
+    }
+
+    public boolean buyStocksNow(List<String> stockIdStringList, String userIdString) {
         if (stockIdStringList != null && userIdString != null
                 && stockIdStringList.size() > 0
                 && ObjectId.isValid(userIdString)
-                && validateTime()) {
+                && validateTime(new Date())) {
             // get user from db
             ObjectId userId = new ObjectId(userIdString);
             User user = mongoTemplate.findById(userId, User.class);
             if (user == null)
-                return "Cannot find user";
+                return false;
 
             for (String stockIdString : stockIdStringList) {
                 if (stockIdString !=  null && ObjectId.isValid(stockIdString)) {
                     ObjectId stockId = new ObjectId(stockIdString);
                     Stock stock = mongoTemplate.findById(stockId, Stock.class);
                     if (stock == null)
-                        return "Cannot buy stocks that do not exist";
+                        return false;
 
                     // ensure that user has enough money in their balance
                     stock.setPrice(updateStockPrice(stock));
                     if (user.getBalance() < stock.getPrice())
-                        return "Cannot afford stocks";
+                        return false;
 
                     // reduce user 'balance' by stock price
                     user.setBalance(user.getBalance() - stock.getPrice());
 
                     // add chosen stock to list of user's stocks
-                    user.addStock(stockId);
+                    user.addStock(stockIdString);
                 }
             }
             // update user in the db
             mongoTemplate.save(user);
-            return "Success!";
+            return true;
         }
-        return "Invalid input";
+        return false;
     }
 
-    public String sellStocks(List<String> stockIdStringList, String userIdString) {
+    public boolean sellStocksNow(List<String> stockIdStringList, String userIdString) {
         if (stockIdStringList != null && userIdString != null
                 && stockIdStringList.size() > 0
                 && ObjectId.isValid(userIdString)
-                && validateTime()) {
+                && validateTime(new Date())) {
             // get user from db
             ObjectId userId = new ObjectId(userIdString);
             User user = mongoTemplate.findById(userId, User.class);
             if (user == null)
-                return "Cannot find user";
+                return false;
 
             for (String stockIdString : stockIdStringList) {
                 if (stockIdString != null && ObjectId.isValid(stockIdString)) {
                     // check if user actually has this stock
-                    ObjectId stockId = new ObjectId(stockIdString);
-                    int index = user.indexOfStock(stockId);
-                    if (index == -1)
-                        return "Cannot sell stocks that are not owned";
+                    if (user.indexOfStock(stockIdString) == -1)
+                        return false;
 
                     // get stock from db
+                    ObjectId stockId = new ObjectId(stockIdString);
                     Stock stock = mongoTemplate.findById(stockId, Stock.class);
                     if (stock == null)
-                        return "Cannot sell stocks that do not exists";
+                        return false;
 
                     // add stock's price to user's balance
                     stock.setPrice(updateStockPrice(stock));
                     user.setBalance(user.getBalance() + stock.getPrice());
 
                     // remove chosen stock from user's stocks
-                    user.removeStock(stockId);
+                    user.removeStock(stockIdString);
                 }
             }
             // update user in the db
             mongoTemplate.save(user);
-            return "Success!";
+            return true;
         }
-        return "Invalid input";
+        return false;
     }
 
     public List<Stock> getAllStocks() {
