@@ -1,8 +1,8 @@
 package com.stocks.stocks.api;
 
+import com.stocks.stocks.model.Schedule;
 import com.stocks.stocks.model.Stock;
 import com.stocks.stocks.model.StockPriceHistory;
-import com.stocks.stocks.model.StockWrapper;
 import com.stocks.stocks.service.StockService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -20,28 +20,33 @@ public class StockController {
         this.stockService = stockService;
     }
 
-    @GetMapping("/price/tickerSymbol/{t}")
-    public Stock getCurrentStockPriceFromTickerSymbol(@PathVariable("t") String tickerSymbol, HttpServletRequest request) {
-        return stockService.getCurrentStockPriceFromTickerSymbol(tickerSymbol, request);
+    @GetMapping("/search/{property}/{value}")
+    public List<Stock> getStocks(@PathVariable("property") String property, @PathVariable("value") String value, HttpServletRequest request) {
+        return stockService.getStocks(property, value, request);
     }
 
-    @GetMapping("/price/company/{c}")
-    public List<Stock> getCurrentStockPriceFromCompany(@PathVariable("c") String company, HttpServletRequest request) {
-        return stockService.getCurrentStockPriceFromCompany(company, request);
+    @GetMapping("/price/{stockId}")
+    public double getCurrentStockPrice(@PathVariable("id") String stockId, HttpServletRequest request) {
+        return stockService.getCurrentStockPrice(stockId, request);
     }
 
-    @GetMapping("/price/tickerSymbol/{t}/history")
-    public StockPriceHistory getStockPriceHistoryFromTickerSymbol(@PathVariable("t") String tickerSymbol, HttpServletRequest request) {
-        return stockService.getStockPriceHistoryFromTickerSymbol(tickerSymbol, request);
+    @GetMapping("/price/{stockId}/history")
+    public StockPriceHistory getStockPriceHistory(@PathVariable("stockId") String stockId, HttpServletRequest request) {
+        return stockService.getStockPriceHistory(stockId, request);
     }
 
     @PostMapping("/buy")
-    public void buyStocks(@RequestBody StockWrapper stockWrapper, HttpServletRequest request) {
-        stockService.buyStocks(stockWrapper.getStockList(), request);
+    public void buyStocks(@RequestBody List<String> stockIdList, HttpServletRequest request) {
+        stockService.buyStocks(stockIdList, request);
     }
 
     @PostMapping("/sell")
-    public void sellStocks(@RequestBody StockWrapper stockWrapper, HttpServletRequest request) {
-        stockService.sellStocks(stockWrapper.getStockList(), request);
+    public void sellStocks(@RequestBody List<String> stockIdList, HttpServletRequest request) {
+        stockService.sellStocks(stockIdList, request);
+    }
+
+    @GetMapping("/summary")
+    public List<Stock> getAllStocks(HttpServletRequest request) {
+        return stockService.getAllStocks(request);
     }
 }
