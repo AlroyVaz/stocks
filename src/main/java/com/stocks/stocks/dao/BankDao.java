@@ -27,9 +27,9 @@ public class BankDao {
                 Query query = new Query();
                 query.addCriteria(Criteria.where("bankRoutingNumber").is(b.getBankRoutingNumber())
                         .and("bankAccountNumber").is(b.getBankAccountNumber())
-                        .and("userId").is(userId));
+                        .and("userId").is(userIdString));
                 if (!mongoTemplate.exists(query, BankAccount.class)) {
-                    b.setUserId(userId);
+                    b.setUserId(userIdString);
                     mongoTemplate.insert(b);
                 }
             }
@@ -47,7 +47,7 @@ public class BankDao {
 
             // make sure user exists, bankAccount exists, and user has enough money
             if (user == null || bankAccount == null
-                    || (!bankAccount.getUserId().equals(userId))
+                    || (!bankAccount.getUserId().equals(userIdString))
                     || user.getBalance() < amount)
                 return;
 
@@ -72,7 +72,7 @@ public class BankDao {
 
             // make sure user exists, bankAccount exists, and bankAccount has enough money
             if (user == null || bankAccount == null
-                    || (!bankAccount.getUserId().equals(userId))
+                    || (!bankAccount.getUserId().equals(userIdString))
                     || bankAccount.getMoney() < amount)
                 return;
 
