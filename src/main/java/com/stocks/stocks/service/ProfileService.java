@@ -34,7 +34,7 @@ public class ProfileService {
         if (session != null) {
             String userId = (String)session.getAttribute("USER_ID");
             if (userId != null)
-                userDao.setUser(changedUser, userId);
+                userDao.updateUser(changedUser, userId);
         }
     }
 }
