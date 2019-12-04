@@ -24,12 +24,19 @@ public class LoginService {
         // can't log in if already logged in (must log out first)
         if (session == null || session.getAttribute("USERNAME") == null) {
             String userId = userDao.validateUser(credentials);
-            if (userId != null) {
+            if (userId != null && session != null) {
                 session.setAttribute("USERNAME", credentials.getUsername());
                 session.setAttribute("USER_ID", userId);
                 return true;
             }
         }
         return false;
+    }
+
+    public void forgotPassword(String username, String forgotPassword, HttpServletRequest request) {
+        HttpSession session = request.getSession();
+        // can't be already logged in (must log out first)
+        if (session == null || session.getAttribute("USERNAME") == null)
+            userDao.forgotPassword(username, forgotPassword);
     }
 }
